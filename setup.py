@@ -15,7 +15,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='githeatmap',
+    name='gittoolbox',
     version='0.1.0',
     license='Apache License, Version 2.0',
     description='',
@@ -23,7 +23,7 @@ setup(
     long_description_content_type='text/markdown',
     author='David Bradford',
     author_email='david.bradford@mongodb.com',
-    url='https://github.com/dbradf/githeatmap',
+    url='https://github.com/dbradf/gittoolbox',
     packages=find_packages('src'),
     package_dir={'': 'src'},
     py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
@@ -42,11 +42,12 @@ setup(
     ],
     install_requires=[
         'Click==7.0',
+        'pygit2==0.28.2',
         'PyYAML==5.1',
         'requests==2.21.0',
     ],
     entry_points='''
         [console_scripts]
-        cli=githeatmap.cli.main:main
+        git-heatmap=gittoolbox.heatmap.heatmap_cli:create
     ''',
 )
