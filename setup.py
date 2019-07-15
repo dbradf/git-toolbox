@@ -41,10 +41,11 @@ setup(
         'Programming Language :: Python :: Implementation :: PyPy',
     ],
     install_requires=[
-        'Click==7.0',
-        'pygit2==0.28.2',
-        'PyYAML==5.1',
-        'requests==2.21.0',
+        'Click ~= 7.0',
+        'GitPython ~= 2.1.11',
+        'PyYAML ~= 5.1',
+        'requests ~= 2.21.0',
+        'structlog ~= 19.1.0',
     ],
     entry_points='''
         [console_scripts]

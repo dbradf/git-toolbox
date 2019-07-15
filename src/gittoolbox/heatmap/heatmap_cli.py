@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import logging
 import json
 import re
 
@@ -38,6 +39,8 @@ def create(repo_location, test_regex, source_regex, months_back, write_json, nor
     :param months_back: How far back to look.
     :param write_json: Should output be written in json.
     """
+    logging.basicConfig(level=logging.INFO)
+
     look_until = datetime.now() - timedelta(weeks=(4 * months_back))
     repo = GitRepo.local_repo(repo_location)
     test_re = re.compile(test_regex)

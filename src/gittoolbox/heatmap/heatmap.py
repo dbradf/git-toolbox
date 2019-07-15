@@ -1,5 +1,11 @@
 from collections import defaultdict
 
+import structlog
+from structlog.stdlib import LoggerFactory
+
+structlog.configure(logger_factory=LoggerFactory())
+LOGGER = structlog.get_logger(__name__)
+
 
 class Heatmap(object):
     def __init__(self, file_intersection, file_count_map, commit_count):
@@ -29,16 +35,20 @@ class Heatmap(object):
         file_intersection = defaultdict(lambda: defaultdict(int))
         file_count = defaultdict(int)
 
+        LOGGER.debug('searching until', ts=look_until)
         commit_count = 0
-
         for commit in repo.walk_commits(repo.head()):
-            if commit.commit_time < look_until.timestamp():
+            LOGGER.debug('Investigating commit', summary=commit.summary(), ts=commit.commit_time,
+                         id=commit.id)
+            if commit.commit_time.timestamp() < look_until.timestamp():
                 break
             commit_count += 1
 
             tests_changed = set()
             src_changed = set()
-            for path in commit.diff_to_parent().new_file_iter():
+            for diff in commit.diff_to_parent().new_file_iter():
+                path = diff.b_path
+                LOGGER.debug('found change', path=path)
                 if test_re.match(path):
                     tests_changed.add(path)
                 elif source_re.match(path):

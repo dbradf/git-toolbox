@@ -1,13 +1,20 @@
 
-from pygit2 import Repository, GIT_SORT_TOPOLOGICAL
+from git import Repo, Commit, DiffIndex
+
+import structlog
+from structlog.stdlib import LoggerFactory
+
+
+structlog.configure(logger_factory=LoggerFactory())
+LOGGER = structlog.get_logger(__name__)
 
 
 class GitRepo(object):
     """A git repository."""
-    def __init__(self, repo: Repository):
+    def __init__(self, repo: Repo):
         """
         Create a new GitRepo.
-        :param repo: pygit2 Repository representing repo.
+        :param repo: Repository representing repo.
         """
         self._repo = repo
 
@@ -18,10 +25,10 @@ class GitRepo(object):
         :param path: Path to local repository.
         :return: GitRepo for local repository.
         """
-        return cls(Repository(path))
+        return cls(Repo(path))
 
     def head(self):
-        return self._repo.head.target
+        return self._repo.head.commit
 
     def walk_commits(self, start_commit):
         """
@@ -30,17 +37,17 @@ class GitRepo(object):
         :param start_commit: Commit to start walking.
         :return: Generator that walks commits.
         """
-        for commit in self._repo.walk(start_commit, GIT_SORT_TOPOLOGICAL):
+        for commit in self._repo.iter_commits(start_commit):
             yield GitCommit(commit)
 
 
 class GitCommit(object):
     """A git commit object."""
-    def __init__(self, commit):
+    def __init__(self, commit: Commit):
         """
         Create an object representing a commit.
 
-        :param commit: pygit2 commit object.
+        :param commit: commit object.
         """
         self._commit = commit
 
@@ -57,7 +64,11 @@ class GitCommit(object):
         Get the time the commit was created.
         :return: commit time.
         """
-        return self._commit.commit_time
+        return self._commit.committed_datetime
+
+    @property
+    def id(self):
+        return self._commit.hexsha
 
     @property
     def parent(self):
@@ -67,6 +78,7 @@ class GitCommit(object):
         Returns the first commit if this is a merge commit.
         :return: Parent of commit.
         """
+        LOGGER.debug('getting parents', parents=self._commit.parents)
         return self._commit.parents[0]
 
     def diff_to_parent(self):
@@ -75,15 +87,15 @@ class GitCommit(object):
 
         :return:
         """
-        return GitDiff(self._commit.tree.diff_to_tree(self.parent.tree))
+        return GitDiff(self._commit.diff(self.parent))
 
 
 class GitDiff(object):
     """A Git diff object."""
-    def __init__(self, diff):
+    def __init__(self, diff: DiffIndex):
         """
         Create an object representing a diff.
-        :param diff: pygit2 diff object.
+        :param diff: diff object.
         """
         self._diff = diff
 
@@ -93,5 +105,11 @@ class GitDiff(object):
 
         :return: Iterator for added files.
         """
-        for patch in self._diff:
-            yield patch.delta.new_file.path
+        for patch in self._diff.iter_change_type('M'):
+            yield patch
+
+        for patch in self._diff.iter_change_type('A'):
+            yield patch
+
+        for patch in self._diff.iter_change_type('R'):
+            yield patch
