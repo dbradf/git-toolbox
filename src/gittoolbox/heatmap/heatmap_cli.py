@@ -25,7 +25,8 @@ def display_row(heatmap):
 @click.option('--months-back', default=4, type=int, help='Number of months to analyze.')
 @click.option('--json', 'write_json', is_flag=True, help='Write output in json.')
 @click.option('--normalize', is_flag=True, help='Normalize how often test files are seen.')
-def create(repo_location, test_regex, source_regex, months_back, write_json, normalize):
+@click.option('--verbose', is_flag=True, help='Enable verbose logging.')
+def create(repo_location, test_regex, source_regex, months_back, write_json, normalize, verbose):
     """
     Create a heat map of which test files have been changed in the same commit as source files.
 
@@ -39,7 +40,8 @@ def create(repo_location, test_regex, source_regex, months_back, write_json, nor
     :param months_back: How far back to look.
     :param write_json: Should output be written in json.
     """
-    logging.basicConfig(level=logging.INFO)
+    log_level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(level=log_level)
 
     look_until = datetime.now() - timedelta(weeks=(4 * months_back))
     repo = GitRepo.local_repo(repo_location)

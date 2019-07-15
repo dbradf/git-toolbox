@@ -1,3 +1,4 @@
+from typing import Set
 
 from git import Repo, Commit, DiffIndex
 
@@ -88,6 +89,16 @@ class GitCommit(object):
         :return:
         """
         return GitDiff(self._commit.diff(self.parent))
+
+    def new_or_changed_files(self, commit: Commit) -> Set:
+        """
+        Get a set of files that were new or changed compared to the given commit.
+
+        :param commit: Commit to compare against.
+        :return: Set of files that are new or changed between commits.
+        """
+        diff = GitDiff(self._commit.diff(commit))
+        return {change.b_path for change in diff.new_file_iter()}
 
 
 class GitDiff(object):

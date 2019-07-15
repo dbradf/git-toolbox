@@ -46,9 +46,9 @@ class Heatmap(object):
 
             tests_changed = set()
             src_changed = set()
-            for diff in commit.diff_to_parent().new_file_iter():
-                path = diff.b_path
+            for path in commit.new_or_changed_files(commit.parent):
                 LOGGER.debug('found change', path=path)
+
                 if test_re.match(path):
                     tests_changed.add(path)
                 elif source_re.match(path):
