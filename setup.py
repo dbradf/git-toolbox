@@ -16,7 +16,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='gittoolbox',
-    version='0.2.0',
+    version='0.2.1',
     license='Apache License, Version 2.0',
     description='',
     long_description=long_description,

@@ -8,18 +8,20 @@ LOGGER = structlog.get_logger(__name__)
 
 
 class Heatmap(object):
-    def __init__(self, file_intersection, file_count_map, commit_count):
+    def __init__(self, file_intersection, file_count_map, commit_count, last_commit=None):
         """
         Create a Heatmap object.
 
         :param file_intersection: Map of how files intersect.
         :param file_count_map: Map of how many times files where seen.
         :param commit_count: Number of commits seen.
+        :param last_commit: Last commit looked at.
         """
         self._file_intersection = file_intersection
         self._file_count_map = file_count_map
-        self.commit_count = commit_count
         self._normalized_map = None
+        self.commit_count = commit_count
+        self.last_commit = last_commit
 
     @classmethod
     def create_heatmap(cls, repo, test_re, source_re, look_until=None, last_commit=None):
@@ -38,6 +40,7 @@ class Heatmap(object):
 
         LOGGER.debug('searching until', ts=look_until, commit=last_commit)
         commit_count = 0
+        last_commit = None
         for commit in repo.walk_commits(repo.head()):
             LOGGER.debug('Investigating commit', summary=commit.summary(), ts=commit.commit_time,
                          id=commit.id)
@@ -49,6 +52,7 @@ class Heatmap(object):
                 break
 
             commit_count += 1
+            last_commit = commit.id
 
             tests_changed = set()
             src_changed = set()
@@ -65,7 +69,7 @@ class Heatmap(object):
                 for t in tests_changed:
                     file_intersection[src][t] += 1
 
-        return Heatmap(file_intersection, file_count, commit_count)
+        return Heatmap(file_intersection, file_count, commit_count, last_commit)
 
     def get_heatmap(self, normalize=False):
         """
