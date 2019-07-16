@@ -22,26 +22,32 @@ class Heatmap(object):
         self._normalized_map = None
 
     @classmethod
-    def create_heatmap(cls, repo, look_until, test_re, source_re):
+    def create_heatmap(cls, repo, test_re, source_re, look_until=None, last_commit=None):
         """
         Create a heatmap for the given repository.
 
         :param repo: Repository to analyze.
-        :param look_until: How far back to analyze commits.
         :param test_re: Regular expression to match tests.
         :param source_re: Regular expression to match source.
+        :param look_until: How far back to analyze commits.
+        :param last_commit: Process results until command is seen.
         :return: Number of commits visited, Heatmap of repo, count file.
         """
         file_intersection = defaultdict(lambda: defaultdict(int))
         file_count = defaultdict(int)
 
-        LOGGER.debug('searching until', ts=look_until)
+        LOGGER.debug('searching until', ts=look_until, commit=last_commit)
         commit_count = 0
         for commit in repo.walk_commits(repo.head()):
             LOGGER.debug('Investigating commit', summary=commit.summary(), ts=commit.commit_time,
                          id=commit.id)
-            if commit.commit_time.timestamp() < look_until.timestamp():
+
+            if look_until and commit.commit_time.timestamp() < look_until.timestamp():
                 break
+
+            if last_commit and commit.id == last_commit:
+                break
+
             commit_count += 1
 
             tests_changed = set()

@@ -16,7 +16,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='gittoolbox',
-    version='0.1.0',
+    version='0.2.0',
     license='Apache License, Version 2.0',
     description='',
     long_description=long_description,
@@ -44,11 +44,12 @@ setup(
         'Click ~= 7.0',
         'GitPython ~= 2.1.11',
         'PyYAML ~= 5.1',
-        'requests ~= 2.21.0',
+        'requests ~= 2.22.0',
         'structlog ~= 19.1.0',
     ],
-    entry_points='''
-        [console_scripts]
-        git-heatmap=gittoolbox.heatmap.heatmap_cli:create
-    ''',
+    entry_points={
+        'console_scripts': [
+            'git-heatmap=gittoolbox.heatmap.heatmap_cli:create',
+        ],
+    }
 )
