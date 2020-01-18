@@ -1,4 +1,6 @@
 """Git repository representation."""
+from __future__ import annotations
+
 from typing import Set
 
 import structlog
@@ -18,7 +20,7 @@ class GitRepo(object):
         self._repo = repo
 
     @classmethod
-    def local_repo(cls, path):
+    def local_repo(cls, path: str) -> GitRepo:
         """
         Create a GitRepo for a local repository.
         :param path: Path to local repository.
@@ -29,7 +31,7 @@ class GitRepo(object):
     def head(self):
         return self._repo.head.commit
 
-    def walk_commits(self, start_commit):
+    def walk_commits(self, start_commit: str):
         """
         Walk the commits in the repository.
 
@@ -38,6 +40,14 @@ class GitRepo(object):
         """
         for commit in self._repo.iter_commits(start_commit):
             yield GitCommit(commit)
+
+    def file_log(self, since):
+        return self._repo.git.log(
+            "--pretty=format:'%h | %aN | %cd | %s'",
+            "--date=short",
+            "--numstat",
+            "--after=2018-01-01",
+        )
 
 
 class GitCommit(object):
@@ -51,7 +61,7 @@ class GitCommit(object):
         """
         self._commit = commit
 
-    def summary(self):
+    def summary(self) -> str:
         """
         Get a summary of the commit message.
         :return: Summary of commit message.
@@ -67,7 +77,7 @@ class GitCommit(object):
         return self._commit.committed_datetime
 
     @property
-    def id(self):
+    def id(self) -> str:
         return self._commit.hexsha
 
     @property

@@ -9,11 +9,12 @@ repository = "https://github.com/dbradf/gittoolbox"
 
 [tool.poetry.scripts]
 git-heatmap = 'gittoolbox.heatmap.heatmap_cli:create'
+git-coupling = 'gittoolbox.coupling.coupling_cli:coupling'
 
 [tool.poetry.dependencies]
 python = "^3.7"
 Click = "^7.0"
-GitPython = "^2.1.11"
+GitPython = "^3.0.5"
 structlog = "^19.1.0"
 
 [tool.poetry.dev-dependencies]
