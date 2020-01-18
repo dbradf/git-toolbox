@@ -1,9 +1,8 @@
+"""Heatmap representation."""
 from collections import defaultdict
 
 import structlog
-from structlog.stdlib import LoggerFactory
 
-structlog.configure(logger_factory=LoggerFactory())
 LOGGER = structlog.get_logger(__name__)
 
 
@@ -38,12 +37,16 @@ class Heatmap(object):
         file_intersection = defaultdict(lambda: defaultdict(int))
         file_count = defaultdict(int)
 
-        LOGGER.debug('searching until', ts=look_until, commit=last_commit)
+        LOGGER.debug("searching until", ts=look_until, commit=last_commit)
         commit_count = 0
         last_commit = None
         for commit in repo.walk_commits(repo.head()):
-            LOGGER.debug('Investigating commit', summary=commit.summary(), ts=commit.commit_time,
-                         id=commit.id)
+            LOGGER.debug(
+                "Investigating commit",
+                summary=commit.summary(),
+                ts=commit.commit_time,
+                id=commit.id,
+            )
 
             if look_until and commit.commit_time.timestamp() < look_until.timestamp():
                 break
@@ -57,7 +60,7 @@ class Heatmap(object):
             tests_changed = set()
             src_changed = set()
             for path in commit.new_or_changed_files(commit.parent):
-                LOGGER.debug('found change', path=path)
+                LOGGER.debug("found change", path=path)
 
                 if test_re.match(path):
                     tests_changed.add(path)
@@ -102,5 +105,6 @@ class Heatmap(object):
         if not self._normalized_map:
             self._normalized_map = {
                 k: self._normalize_row(v, self._file_count_map[k])
-                for k, v in self._file_intersection.items()}
+                for k, v in self._file_intersection.items()
+            }
         return self._normalized_map

@@ -1,15 +1,18 @@
-from datetime import datetime, timedelta
-import logging
+"""Cli interface for creating test/source heatmaps."""
 import json
+import logging
 import re
+from datetime import datetime, timedelta
+from typing import Dict
 
 import click
+import structlog
 
 from gittoolbox.git.git_repo import GitRepo
 from gittoolbox.heatmap.heatmap import Heatmap
 
 
-def display_row(heatmap):
+def display_row(heatmap: Dict) -> None:
     """
     Display the information for one source file.
 
@@ -18,17 +21,25 @@ def display_row(heatmap):
     print(", ".join([f"{k}: {heatmap[k]}" for k in sorted(heatmap, key=heatmap.get, reverse=True)]))
 
 
-@click.command('git-heatmap')
-@click.option('--repo-location', required=True, help='Repository to analyze.')
-@click.option('-t', '--test-regex', required=True, help='Regex to match test files.')
-@click.option('-s', '--source-regex', required=True, help='Regex to match source files.')
-@click.option('--months-back', default=None, type=int, help='Number of months to analyze.')
-@click.option('--json', 'write_json', is_flag=True, help='Write output in json.')
-@click.option('--normalize', is_flag=True, help='Normalize how often test files are seen.')
-@click.option('--verbose', is_flag=True, help='Enable verbose logging.')
-@click.option('--to-commit', default=None, help='Compute to the given commit.')
-def create(repo_location, test_regex, source_regex, months_back, write_json, normalize, verbose,
-           to_commit):
+@click.command("git-heatmap")
+@click.option("--repo-location", required=True, help="Repository to analyze.")
+@click.option("-t", "--test-regex", required=True, help="Regex to match test files.")
+@click.option("-s", "--source-regex", required=True, help="Regex to match source files.")
+@click.option("--months-back", default=None, type=int, help="Number of months to analyze.")
+@click.option("--json", "write_json", is_flag=True, help="Write output in json.")
+@click.option("--normalize", is_flag=True, help="Normalize how often test files are seen.")
+@click.option("--verbose", is_flag=True, help="Enable verbose logging.")
+@click.option("--to-commit", default=None, help="Compute to the given commit.")
+def create(
+    repo_location: str,
+    test_regex: str,
+    source_regex: str,
+    months_back: int,
+    write_json: bool,
+    normalize: bool,
+    verbose: bool,
+    to_commit: str,
+) -> None:
     """
     Create a heat map of which test files have been changed in the same commit as source files.
 
@@ -42,6 +53,7 @@ def create(repo_location, test_regex, source_regex, months_back, write_json, nor
     :param months_back: How far back to look.
     :param write_json: Should output be written in json.
     """
+    structlog.configure(logger_factory=structlog.stdlib.LoggerFactory())
     log_level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(level=log_level)
 
@@ -58,7 +70,7 @@ def create(repo_location, test_regex, source_regex, months_back, write_json, nor
     else:
         heatmap_dict = heatmap.get_heatmap(normalize)
         for src in heatmap_dict:
-            print(f'{src}: ', end='')
+            print(f"{src}: ", end="")
             display_row(heatmap_dict[src])
 
         print(f"Looked at {heatmap.commit_count} commits.")

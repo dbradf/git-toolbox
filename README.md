@@ -12,11 +12,7 @@ A library and tools for working with git.
 
 Testing is done via `pytest`.
 
-To run the test with code coverage:
-
+To run the tests:
 ```
-$ pip install -r requirements.txt
-$ pytest --cov=src --cov-report=html
+$ poetry run pytest
 ```
-
-This will generate an html coverage report in `htmlcov/` directory.
